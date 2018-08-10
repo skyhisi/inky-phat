@@ -69,6 +69,7 @@ class Inky212x104:
         self.inky_colour = None
         self.resolution = resolution
         self.width, self.height = resolution
+        self.fast = False
 
         self.buffer = numpy.zeros((self.height, self.width), dtype=numpy.uint8)
 
@@ -337,9 +338,9 @@ class Inky212x104:
 #       Duration              |  Repeat
 #       A     B     C     D   |
         67,   10,   31,   10,    4,  # 0 Flash
-        16,   8,    4,    4,     6,  # 1 clear
-        4,    8,    8,    32,    16,  # 2 bring in the black
-        4,    8,    8,    64,    32, # 3 time for red
+        16,   8,    4,    4,     4 if self.fast else 6,  # 1 clear
+        4,    8,    8,    32,    10 if self.fast else 16,  # 2 bring in the black
+        4,    8,    8,    64,    20 if self.fast else 32, # 3 time for red
         6,    6,    6,    2,     2,  # 4 final black sharpen phase
         0,    0,    0,    0,     0,  # 4
         0,    0,    0,    0,     0,  # 5
@@ -379,10 +380,10 @@ class Inky212x104:
         # Dummy line period
         # Default value: 0b-----011
         # See page 22 of datasheet
-        self._send_command(0x3a, 0x07)
+        self._send_command(0x3a, 0x10 if self.fast else 0x07)
 
         # Gate line width
-        self._send_command(0x3b, 0x04)
+        self._send_command(0x3b, 0x02 if self.fast else 0x04)
 
         # Data entry mode
         self._send_command(0x11, 0x03)
